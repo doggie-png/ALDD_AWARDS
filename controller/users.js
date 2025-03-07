@@ -69,4 +69,3 @@ exports.updateUser = async (req, res) => {
       res.status(404).json({ message: `User with ID ${id} not found` });
     }
   };
-  

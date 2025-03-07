@@ -22,8 +22,11 @@ mongoose.connect(uri, {
       res.send('Hello World!')
     })
     const users = require('./views/users')
+    const games = require('./views/games')
+
     app.use('/users', users)
-    
+    app.use('/games', games);
+
     app.listen(port, () => {
       console.log(`Example app listening on port ${port}`)
     })
@@ -31,3 +34,4 @@ mongoose.connect(uri, {
   .catch(error => {
     console.error('Connection fail', error);
   });
+  
