@@ -1,12 +1,26 @@
 const express = require("express");
 const router = express.Router();
-const { getGames, createGame } = require("../controller/games");
+const {
+  getGames,
+  createGame,
+  getGameById,
+  updateGame,
+  deleteGame
+} = require("../controller/games");
 
-router.get('/', (req, res) => {
-    res.send('Games home page')
-  })
+// Obtener todos los juegos
+router.route("/").get(getGames);
 
-router.route("/games").get(getGames);
-router.route("/create").post(createGame);
+// Crear un nuevo juego
+router.route("/").post(createGame);
+
+// Obtener un juego por ID
+router.route("/:id").get(getGameById);
+
+// Actualizar un juego por ID
+router.route("/:id").patch(updateGame);
+
+// Eliminar un juego por ID
+router.route("/:id").delete(deleteGame);
 
 module.exports = router;

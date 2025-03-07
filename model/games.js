@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 
 const gameSchema = new mongoose.Schema({
-  id: { type: Number, unique: true },
-  title: { type: String, required: true },
+  id: { type: Number, required: true, unique: true },
+  title: { type: String, required: true, unique: true },
   genre: { type: String, required: true },
-  releaseDate: { type: Date },
+  releaseDate: { type: String, required: true  },
 });
 
 const Game = mongoose.model("Game", gameSchema);
