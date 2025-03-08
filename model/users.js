@@ -16,6 +16,22 @@ const usuariosSchema = new mongoose.Schema({
     type: String,
     required: [true, "Debe ser la password del usuario"]
   },
+  gamesInProgress: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Game'
+  }],
+  gamesCompleted: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Game'
+  }],
+  gamesLiked: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Game'
+  }],
+  gamesDisliked: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Game'
+  }]
 
 });
 
