@@ -78,8 +78,10 @@ exports.updateUser = async (req, res) => {
 // @access  Public
 exports.addGameToInProgress = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id); // Buscar usuario por su ID
+    const user = await Users.find({"id": req.params.id}); // Buscar usuario por su ID
+    console.dir(user)
     const game = await Game.findById(req.body.gameId); // El ID del juego se pasa en el body
+    console.dir(game)
 
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
@@ -87,14 +89,14 @@ exports.addGameToInProgress = async (req, res) => {
     if (!game) {
       return res.status(404).json({ success: false, message: "Game not found" });
     }
-
     // Agregar el juego a la lista de juegos en progreso
-    user.gamesInProgress.push(game);
-    await user.save();
+    user[0].gamesInProgress.push(game);
+    await user[0].save();
 
     res.status(200).json({ success: true, message: "Game added to in progress" });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error adding game to in progress 2" });
+    console.dir(error)
+    res.status(500).json({ success: false, message: "Error adding game to in progress" });
   }
 };
 
@@ -103,7 +105,7 @@ exports.addGameToInProgress = async (req, res) => {
 // @access  Public
 exports.removeGameFromInProgress = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await Users.find({"id": req.params.id});
     const game = await Game.findById(req.body.gameId); // Buscar por _id del juego
 
     if (!user) {
@@ -114,8 +116,8 @@ exports.removeGameFromInProgress = async (req, res) => {
     }
 
     // Eliminar el juego de la lista de juegos en progreso
-    user.gamesInProgress.pull(game); // Usamos el método pull de MongoDB
-    await user.save();
+    user[0].gamesInProgress.pull(game); // Usamos el método pull de MongoDB
+    await user[0].save();
 
     res.status(200).json({ success: true, message: "Game removed from in progress" });
   } catch (error) {
@@ -128,7 +130,7 @@ exports.removeGameFromInProgress = async (req, res) => {
 // @access  Public
 exports.addGameToCompleted = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await Users.find({"id": req.params.id});
     const game = await Game.findById(req.body.gameId);
 
     if (!user) {
@@ -139,8 +141,8 @@ exports.addGameToCompleted = async (req, res) => {
     }
 
     // Agregar el juego a la lista de juegos completados
-    user.completedGames.push(game);
-    await user.save();
+    user[0].gamesCompleted.push(game);
+    await user[0].save();
 
     res.status(200).json({ success: true, message: "Game added to completed" });
   } catch (error) {
@@ -153,7 +155,7 @@ exports.addGameToCompleted = async (req, res) => {
 // @access  Public
 exports.removeGameFromCompleted = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await Users.find({"id": req.params.id});
     const game = await Game.findById(req.body.gameId);
 
     if (!user) {
@@ -164,8 +166,8 @@ exports.removeGameFromCompleted = async (req, res) => {
     }
 
     // Eliminar el juego de la lista de juegos completados
-    user.completedGames.pull(game);
-    await user.save();
+    user[0].gamesCompleted.pull(game);
+    await user[0].save();
 
     res.status(200).json({ success: true, message: "Game removed from completed" });
   } catch (error) {
@@ -178,7 +180,7 @@ exports.removeGameFromCompleted = async (req, res) => {
 // @access  Public
 exports.addGameToLiked = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await Users.find({"id": req.params.id});
     const game = await Game.findById(req.body.gameId);
 
     if (!user) {
@@ -189,8 +191,8 @@ exports.addGameToLiked = async (req, res) => {
     }
 
     // Agregar el juego a la lista de juegos que le gustan
-    user.likedGames.push(game);
-    await user.save();
+    user[0].gamesLiked.push(game);
+    await user[0].save();
 
     res.status(200).json({ success: true, message: "Game added to liked" });
   } catch (error) {
@@ -203,7 +205,7 @@ exports.addGameToLiked = async (req, res) => {
 // @access  Public
 exports.removeGameFromLiked = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await Users.find({"id": req.params.id});
     const game = await Game.findById(req.body.gameId);
 
     if (!user) {
@@ -214,8 +216,8 @@ exports.removeGameFromLiked = async (req, res) => {
     }
 
     // Eliminar el juego de la lista de juegos que le gustan
-    user.likedGames.pull(game);
-    await user.save();
+    user[0].gamesLiked.pull(game);
+    await user[0].save();
 
     res.status(200).json({ success: true, message: "Game removed from liked" });
   } catch (error) {
@@ -228,7 +230,7 @@ exports.removeGameFromLiked = async (req, res) => {
 // @access  Public
 exports.addGameToDisliked = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await Users.find({"id": req.params.id});
     const game = await Game.findById(req.body.gameId);
 
     if (!user) {
@@ -239,8 +241,8 @@ exports.addGameToDisliked = async (req, res) => {
     }
 
     // Agregar el juego a la lista de juegos que no le gustan
-    user.dislikedGames.push(game);
-    await user.save();
+    user[0].gamesDisliked.push(game);
+    await user[0].save();
 
     res.status(200).json({ success: true, message: "Game added to disliked" });
   } catch (error) {
@@ -264,8 +266,8 @@ exports.removeGameFromDisliked = async (req, res) => {
     }
 
     // Eliminar el juego de la lista de juegos que no le gustan
-    user.dislikedGames.pull(game);
-    await user.save();
+    user[0].gamesDislike.pull(game);
+    await user[0].save();
 
     res.status(200).json({ success: true, message: "Game removed from disliked" });
   } catch (error) {

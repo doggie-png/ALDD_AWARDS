@@ -6,8 +6,8 @@ const MostDislikedGameSchema = new mongoose.Schema({
 });
 
 // Método estático para obtener el Top 10 juegos más "No me gusta"
-MostDislikedGameSchema.statics.getTop10 = function () {
-  return this.find().sort({ dislikesCount: -1 }).limit(10).populate("gameId");
+MostDislikedGameSchema.statics.getTop10 = async function () {
+  return await this.find().sort({ dislikesCount: -1 }).limit(10).populate("gameId");
 };
 
 module.exports = mongoose.model("MostDislikedGame", MostDislikedGameSchema);

@@ -6,8 +6,8 @@ const MostLikedGameSchema = new mongoose.Schema({
 });
 
 // Método estático para obtener el Top 10 juegos más "Me gusta"
-MostLikedGameSchema.statics.getTop10 = function () {
-  return this.find().sort({ likesCount: -1 }).limit(10).populate("gameId");
+MostLikedGameSchema.statics.getTop10 = async function () {
+  return await this.find().sort({ likesCount: -1 }).limit(10).populate("gameId");
 };
 
 module.exports = mongoose.model("MostLikedGame", MostLikedGameSchema);

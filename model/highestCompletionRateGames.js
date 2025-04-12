@@ -8,8 +8,8 @@ const CompletionRateGameSchema = new mongoose.Schema({
 });
 
 // Método estático para obtener el Top 10 juegos con mayor tasa de finalización
-CompletionRateGameSchema.statics.getTop10 = function () {
-  return this.find().sort({ completionRate: -1 }).limit(10).populate("gameId");
+CompletionRateGameSchema.statics.getTop10 = async function () {
+  return await this.find().sort({ completionRate: -1 }).limit(10).populate("gameId");
 };
 
 module.exports = mongoose.model("CompletionRateGame", CompletionRateGameSchema);

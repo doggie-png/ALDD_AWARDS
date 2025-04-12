@@ -7,8 +7,8 @@ const MostVotedGameSchema = new mongoose.Schema({
 });
 
 // Método estático para obtener el Top 10 juegos más votados
-MostVotedGameSchema.statics.getTop10 = function () {
-  return this.find().sort({ votes: -1 }).limit(10).populate("gameId");
+MostVotedGameSchema.statics.getTop10 = async function () {
+  return await this.find().sort({ votes: -1 }).limit(10).populate("gameId");
 };
 
 module.exports = mongoose.model("MostVotedGame", MostVotedGameSchema);

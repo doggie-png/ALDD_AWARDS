@@ -17,7 +17,7 @@ exports.getGames = async (req, res) => {
 // @access  Public
 exports.getGameById = async (req, res) => {
   try {
-    const game = await Game.findOne({ id: req.params.id });
+    const game = await Game.find({ "id": req.params.id});
 
     if (!game) {
       return res.status(404).json({ success: false, message: "Game not found" });
@@ -37,13 +37,13 @@ exports.createGame = async (req, res) => {
       const { id, title, genre, releaseDate } = req.body;
   
       // Verificar si el juego ya existe en la base de datos
-      const existingID = await Game.findOne({ id });
+      const existingID = await Game.find({  "id": req.params.id });
       if (existingID) {
         return res.status(400).json({ success: false, message: "Game already exists" });
       }
-      const existingGame = await Game.findOne({ title });
+      const existingGame = await Game.find({ "title": req.params.title });
       if (existingGame) {
-        return res.status(400).json({ success: false, message: "Game already exists" });
+        return res.status(400).json({ success: fals1e, message: "Game already exists" });
       }
   
       const game = await Game.create({ id, title, genre, releaseDate });
@@ -62,7 +62,7 @@ exports.updateGame = async (req, res) => {
     
     // Buscamos el juego por su ID
     const game = await Game.findOneAndUpdate(
-      { id: req.params.id },
+      { "id": req.params.id },
       { title, genre, releaseDate },
       { new: true }
     );
@@ -82,7 +82,7 @@ exports.updateGame = async (req, res) => {
 // @access  Public
 exports.deleteGame = async (req, res) => {
   try {
-    const game = await Game.findOneAndDelete({ id: req.params.id });
+    const game = await Game.findOneAndDelete({ "id": req.params.id });
 
     if (!game) {
       return res.status(404).json({ success: false, message: "Game not found" });
