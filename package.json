@@ -2,19 +2,29 @@
   "name": "pw2-backend",
   "version": "1.0.0",
   "description": "Ejemplo de backend con node",
+  "keywords": [
+    "PRUEBAS"
+  ],
+  "homepage": "https://github.com/doggie-png/ALDD_AWARDS#readme",
+  "bugs": {
+    "url": "https://github.com/doggie-png/ALDD_AWARDS/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doggie-png/ALDD_AWARDS.git"
+  },
+  "license": "ISC",
+  "author": "Carlos Orta",
+  "type": "commonjs",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [
-    "PRUEBAS"
-  ],
-  "author": "Carlos Orta",
-  "license": "ISC",
   "dependencies": {
     "body-parser": "^1.20.3",
     "express": "^4.21.2",
     "mongoose": "^8.11.0"
-  }
+  },
+  "devDependencies": {}
 }
