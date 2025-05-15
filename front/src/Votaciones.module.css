@@ -1,0 +1,54 @@
+.body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: url('./luxurious-black-and-gold-background-with-copy-space-vector.jpg') no-repeat center center fixed;
+    background-size: cover;
+    color: white;
+    text-align: center;
+  }
+  
+  .container-vote {
+    margin-top: 50px;
+    padding: 20px;
+    background: #222;
+    border-radius: 10px;
+    flex: 1;
+  }
+  
+  .game-card {
+    background-color: #111;
+    padding: 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    height: 250px; /* <-- más pequeña */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .game-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px #b8860b;
+  }
+  
+  .footer {
+    padding: 20px;
+    background: #111;
+    width: 100%;
+  }
+  
+  .game-card img {
+    width: 60%;
+    height: 80%; /* menos alto */
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  
+  .game-card h4 {
+    margin-top: 8px;
+    font-size: 0.95rem; /* opcional: más pequeño */
+  }
+  

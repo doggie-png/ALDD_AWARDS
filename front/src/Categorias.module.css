@@ -1,0 +1,73 @@
+.body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: url('./luxurious-black-and-gold-background-with-copy-space-vector.jpg') no-repeat center center fixed;
+    background-size: cover;
+    color: white;
+    text-align: center;
+  }
+  
+  .container-vote {
+    margin-top: 50px;
+    padding: 30px;
+    background: #222;
+    border-radius: 15px;
+    flex: 1;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+  }
+  
+  .shiny-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    background: linear-gradient(90deg, #ffd700, #fff8dc, #ffd700);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 10px #ffd700;
+    margin-bottom: 40px;
+  }
+  
+  .game-card {
+    background-color: #111;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .game-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px #b8860b;
+  }
+  
+  .game-card img {
+    width: 100%;
+    height: 70%;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  
+  .game-card h4 {
+    font-size: 1rem;
+    margin-top: 10px;
+    color: #fff;
+  }
+  
+  .footer {
+    padding: 20px;
+    background: #111;
+    width: 100%;
+  }
+  
+  .tinyButton {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 5px;
+  }
+  
