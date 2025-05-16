@@ -49,7 +49,7 @@ exports.createUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
     const id = req.params.id;
     const { name, mail, password} = req.body;
-    const user = await Users.findOneAndUpdate({ "id": id }, { "name": name }, { "mail": mail }, { "password": password });
+    await Users.findOneAndUpdate({ id }, { name, mail, password }, { new: true });
     if (user != null) {
      const userRes = user._doc;
       res.json({ message: 'User updated successfully', userRes });
@@ -255,7 +255,7 @@ exports.addGameToDisliked = async (req, res) => {
 // @access  Public
 exports.removeGameFromDisliked = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await Users.find({ "id": req.params.id });
     const game = await Game.findById(req.body.gameId);
 
     if (!user) {

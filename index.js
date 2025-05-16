@@ -1,37 +1,45 @@
-/*var http = require("http");
-http.createServer(function (request, response) {
-    response.writeHead(200, { "Content-Type": "text/plain" });
-    response.end("Hola Mundo!\n");
-  }).listen(8080);
-console.log("Servidor en la url http://127.0.0.1:8080/");
-*/
 const mongoose = require('mongoose');
-const uri = 'mongodb://localhost:27017/test';
-const express = require('express'); const app = express(); const port = 8080;
+const express = require('express');
+const cors = require("cors");
 const bodyParser = require('body-parser');
-// support parsing of application/json type post data
+
+const app = express();
+const port = 8080;
+const uri = 'mongodb://localhost:27017/test';
+
+// ✅ CONFIGURAR MIDDLEWARES ANTES DE LAS RUTAS
+app.use(cors({
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// ✅ CONECTAR A MONGODB
 mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
-  .then(() => {
-    app.use(bodyParser.json());
-    //support parsing of application/x-www-form-urlencoded post data
-    app.use(bodyParser.urlencoded({ extended: true }));
-    app.get('/', (req, res) => {
-      res.send('Hello World!')
-    })
-    const users = require('./views/users')
-    const games = require('./views/games')
+.then(() => {
+  console.log('Conexión a MongoDB exitosa');
 
-    app.use('/users', users)
-    app.use('/games', games);
-
-    app.listen(port, () => {
-      console.log(`Example app listening on port ${port}`)
-    })
-      })
-  .catch(error => {
-    console.error('Connection fail', error);
+  // ✅ RUTAS
+  app.get('/', (req, res) => {
+    res.send('Hello World!');
   });
-  
+
+  const users = require('./views/users');
+  const games = require('./views/games');
+
+  app.use('/users', users);
+  app.use('/games', games);
+
+  // ✅ INICIAR SERVIDOR
+  app.listen(port, () => {
+    console.log(`Servidor backend escuchando en http://localhost:${port}`);
+  });
+})
+.catch(error => {
+  console.error('Fallo en la conexión a MongoDB:', error);
+});
