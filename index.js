@@ -7,7 +7,6 @@ const app = express();
 const port = 8080;
 const uri = 'mongodb://localhost:27017/test';
 
-// ✅ CONFIGURAR MIDDLEWARES ANTES DE LAS RUTAS
 app.use(cors({
   origin: 'http://localhost:3000',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -16,7 +15,6 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// ✅ CONECTAR A MONGODB
 mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -24,18 +22,18 @@ mongoose.connect(uri, {
 .then(() => {
   console.log('Conexión a MongoDB exitosa');
 
-  // ✅ RUTAS
   app.get('/', (req, res) => {
     res.send('Hello World!');
   });
 
   const users = require('./views/users');
   const games = require('./views/games');
+  const topGames = require('./views/topGames');
 
   app.use('/users', users);
   app.use('/games', games);
+  app.use('/topGames', topGames);
 
-  // ✅ INICIAR SERVIDOR
   app.listen(port, () => {
     console.log(`Servidor backend escuchando en http://localhost:${port}`);
   });

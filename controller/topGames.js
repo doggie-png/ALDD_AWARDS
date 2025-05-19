@@ -1,7 +1,7 @@
-const MostLikedGame = require("../model/MostLikedGame");
-const MostDislikedGame = require("../model/MostDislikedGame");
-const MostVotedGame = require("../model/MostVotedGame");
-const CompletionRateGame = require("../model/CompletionRateGame");
+const MostLikedGame = require("../model/mostLikedGames");
+const MostDislikedGame = require("../model/mostDislikedGames");
+const MostVotedGame = require("../model/mostVotedGames");
+const CompletionRateGame = require("../model/highestCompletionRateGames");
 
 // Obtener los 10 juegos con más "Me gusta"
 exports.getTopLikedGames = async (req, res) => {

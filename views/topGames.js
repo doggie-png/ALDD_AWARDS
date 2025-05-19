@@ -8,10 +8,14 @@ const {
   getAllTopGames,
 } = require("../controller/topGames");
 
-router.route("/top-liked", getTopLikedGames);
-router.route("/top-disliked", getTopDislikedGames);
-router.route("/top-voted", getTopVotedGames);
-router.route("/top-completion-rate", getTopCompletionRateGames);
-router.route("/all", getAllTopGames);
+router.get('/', (req, res) => {
+  res.send('topGames home page')
+})
+
+router.route("/top-liked").get(getTopLikedGames);
+router.route("/top-disliked").get(getTopDislikedGames);
+router.route("/top-voted").get(getTopVotedGames);
+router.route("/top-completion-rate").get(getTopCompletionRateGames);
+router.route("/all").get(getAllTopGames);
 
 module.exports = router;

@@ -4,7 +4,9 @@ router.use((req, res, next) => {
   next()
 })
 const { 
-  getUsers,
+  loginUser,
+  registerUser,
+  getUsers, 
   getUser, 
   createUser, 
   updateUser, 
@@ -47,5 +49,9 @@ router.route("/user/:id/remove-liked").delete(removeGameFromLiked);
 
 router.route("/user/:id/add-disliked").post(addGameToDisliked);
 router.route("/user/:id/remove-disliked").delete(removeGameFromDisliked)
+
+  //--------------------------USERS / Registro-Login---------------------------------------//
+router.route('/login').post(loginUser);
+router.route('/register').post(registerUser);
 
 module.exports = router

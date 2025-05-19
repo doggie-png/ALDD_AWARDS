@@ -1,5 +1,6 @@
 const Users = require('../model/users.js');
 const Game = require('../model/games.js');
+const bcrypt = require('bcrypt');
 
 // @desc    Get all users
 // @route   GET /api/v1/users
@@ -49,7 +50,7 @@ exports.createUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
     const id = req.params.id;
     const { name, mail, password} = req.body;
-    await Users.findOneAndUpdate({ id }, { name, mail, password }, { new: true });
+    const user = await Users.findOneAndUpdate({ id }, { name, mail, password }, { new: true });
     if (user != null) {
      const userRes = user._doc;
       res.json({ message: 'User updated successfully', userRes });
@@ -266,7 +267,7 @@ exports.removeGameFromDisliked = async (req, res) => {
     }
 
     // Eliminar el juego de la lista de juegos que no le gustan
-    user[0].gamesDislike.pull(game);
+    user[0].gamesDisliked.pull(game);
     await user[0].save();
 
     res.status(200).json({ success: true, message: "Game removed from disliked" });
@@ -274,3 +275,58 @@ exports.removeGameFromDisliked = async (req, res) => {
     res.status(500).json({ success: false, message: "Error removing game from disliked" });
   }
 };
+
+////////////////////////////////////////////////
+
+// Registro
+exports.registerUser = async (req, res) => {
+  try {
+    const { id, name, mail, password } = req.body;
+
+    // Validación de campos obligatorios
+    if (!id || !name || !mail || !password) {
+      return res.status(400).json({ message: 'Todos los campos son obligatorios.' });
+    }
+
+    // Verificación si el correo ya está registrado
+    const existingUser = await Users.findOne({ mail });
+    if (existingUser) {
+      return res.status(400).json({ message: 'El correo ya está registrado.' });
+    }
+
+     await Users.create(req.body);
+     res.status(201).json({ success: true, user: { id, name, mail, password}, message: 'User created successfully' });
+
+  } catch (error) {
+    console.error('Error en registerUser:', error);
+    res.status(500).json({ message: 'Error en el servidor al registrar usuario.' });
+  }
+};
+
+
+// Login
+exports.loginUser = async (req, res) => {
+  try {
+    const { mail, password } = req.body;
+
+    if (!mail || !password) {
+      return res.status(400).json({ message: 'Correo y contraseña son obligatorios.' });
+    }
+
+    const user = await Users.findOne({ mail });
+    if (!user) {
+      return res.status(401).json({ message: 'Correo no registrado.' });
+    }
+
+    // Comparar contraseñas 
+    if (user.password !== password) {
+      return res.status(401).json({ message: 'Contraseña incorrecta.' });
+    }
+
+    res.status(200).json({ user: { id: user._id, name: user.name, mail: user.mail } });
+  } catch (error) {
+    console.error('Error en loginUser:', error);
+    res.status(500).json({ message: 'Error en el servidor al iniciar sesión.' });
+  }
+};
+
