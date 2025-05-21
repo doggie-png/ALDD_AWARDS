@@ -2,6 +2,30 @@ const Users = require('../model/users.js');
 const Game = require('../model/games.js');
 const bcrypt = require('bcrypt');
 
+// @access  Public
+exports.getUser = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    console.log(`Fetching user with id: ${id}`); // Debug: confirmar id
+    const user = await Users.findOne({ id })
+      .populate({
+        path: 'gamesInProgress gamesCompleted gamesLiked gamesDisliked',
+        model: 'Game',
+        select: 'id title genre releaseDate',
+      })
+      .lean();
+    if (user) {
+      console.log('Populated user data:', JSON.stringify(user, null, 2));
+      res.status(200).json({ success: true, count: 1, data: user });
+    } else {
+      console.log(`User with id ${id} not found`);
+      res.status(404).json({ message: `User with ID ${id} not found` });
+    }
+  } catch (error) {
+    console.error('Error en getUser:', error);
+    res.status(500).json({ message: 'Error al obtener el usuario' });
+  }
+};
 // @desc    Get all users
 // @route   GET /api/v1/users
 // @access  Public
@@ -20,6 +44,19 @@ exports.getUser = async (req, res) => {
       res.status(200).json({ success: true, count: user.length, data: user});
   } else {
     res.status(500).json({ message: `User with filter ${id} not found` });
+  }
+};
+// @desc    Get all users
+// @route   GET /api/v1/users
+// @access  Public
+exports.getUser = async (req, res) => {
+  const filtro = req.params.mail;
+//    const user = await Users.find({"id": id})
+  const user = await Users.find({"mail": new RegExp(filtro, 'gi')})
+  if (user.length > 0) {
+      res.status(200).json({ success: true, count: user.length, data: user});
+  } else {
+    res.status(500).json({ message: `User with filter ${mail} not found` });
   }
 };
 // @desc    Get all users
@@ -77,208 +114,190 @@ exports.updateUser = async (req, res) => {
 // @desc    Agregar un juego a la lista de juegos en progreso de un usuario
 // @route   POST /api/v1/users/:id/add-in-progress
 // @access  Public
-exports.addGameToInProgress = async (req, res) => {
-  try {
-    const user = await Users.find({"id": req.params.id}); // Buscar usuario por su ID
-    console.dir(user)
-    const game = await Game.findById(req.body.gameId); // El ID del juego se pasa en el body
-    console.dir(game)
-
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
-    if (!game) {
-      return res.status(404).json({ success: false, message: "Game not found" });
-    }
-    // Agregar el juego a la lista de juegos en progreso
-    user[0].gamesInProgress.push(game);
-    await user[0].save();
-
-    res.status(200).json({ success: true, message: "Game added to in progress" });
-  } catch (error) {
-    console.dir(error)
-    res.status(500).json({ success: false, message: "Error adding game to in progress" });
-  }
-};
-
-// @desc    Eliminar un juego de la lista de juegos en progreso de un usuario
-// @route   DELETE /api/v1/users/:id/remove-in-progress
-// @access  Public
-exports.removeGameFromInProgress = async (req, res) => {
-  try {
-    const user = await Users.find({"id": req.params.id});
-    const game = await Game.findById(req.body.gameId); // Buscar por _id del juego
-
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
-    if (!game) {
-      return res.status(404).json({ success: false, message: "Game not found" });
-    }
-
-    // Eliminar el juego de la lista de juegos en progreso
-    user[0].gamesInProgress.pull(game); // Usamos el método pull de MongoDB
-    await user[0].save();
-
-    res.status(200).json({ success: true, message: "Game removed from in progress" });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Error removing game from in progress" });
-  }
-};
-
-// @desc    Agregar un juego a la lista de juegos completados de un usuario
-// @route   POST /api/v1/users/:id/add-completed
-// @access  Public
 exports.addGameToCompleted = async (req, res) => {
   try {
-    const user = await Users.find({"id": req.params.id});
-    const game = await Game.findById(req.body.gameId);
-
+    const id = parseInt(req.params.id, 10);
+    const { gameId } = req.body;
+    const user = await Users.findOne({ id });
+    const game = await Game.findById(gameId);
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
     if (!game) {
-      return res.status(404).json({ success: false, message: "Game not found" });
+      return res.status(404).json({ success: false, message: 'Game not found' });
     }
-
-    // Agregar el juego a la lista de juegos completados
-    user[0].gamesCompleted.push(game);
-    await user[0].save();
-
-    res.status(200).json({ success: true, message: "Game added to completed" });
+    if (!user.gamesCompleted.includes(gameId)) {
+      user.gamesCompleted.push(gameId);
+      await user.save();
+    }
+    res.status(200).json({ success: true, message: 'Game added to completed' });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error adding game to completed" });
+    console.error('Error en addGameToCompleted:', error);
+    res.status(500).json({ success: false, message: 'Error adding game to completed' });
   }
 };
 
 // @desc    Eliminar un juego de la lista de juegos completados de un usuario
-// @route   DELETE /api/v1/users/:id/remove-completed
+// @route   DELETE /api/v1/users/user/:id/remove-completed
 // @access  Public
 exports.removeGameFromCompleted = async (req, res) => {
   try {
-    const user = await Users.find({"id": req.params.id});
-    const game = await Game.findById(req.body.gameId);
-
+    const id = parseInt(req.params.id, 10);
+    const { gameId } = req.body;
+    const user = await Users.findOne({ id });
+    const game = await Game.findById(gameId);
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
     if (!game) {
-      return res.status(404).json({ success: false, message: "Game not found" });
+      return res.status(404).json({ success: false, message: 'Game not found' });
     }
-
-    // Eliminar el juego de la lista de juegos completados
-    user[0].gamesCompleted.pull(game);
-    await user[0].save();
-
-    res.status(200).json({ success: true, message: "Game removed from completed" });
+    user.gamesCompleted.pull(gameId);
+    await user.save();
+    const updatedUser = await Users.findOne({ id })
+      .populate({
+        path: 'gamesInProgress gamesCompleted gamesLiked gamesDisliked',
+        model: 'Game',
+        select: 'id title genre releaseDate',
+      })
+      .lean();
+    res.status(200).json({
+      success: true,
+      message: 'Game removed from completed',
+      data: updatedUser,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error removing game from completed" });
+    console.error('Error en removeGameFromCompleted:', error);
+    res.status(500).json({ success: false, message: 'Error removing game from completed' });
   }
 };
 
 // @desc    Agregar un juego a la lista de juegos que le gustan a un usuario
-// @route   POST /api/v1/users/:id/add-liked
+// @route   POST /api/v1/users/user/:id/add-liked
 // @access  Public
 exports.addGameToLiked = async (req, res) => {
   try {
-    const user = await Users.find({"id": req.params.id});
-    const game = await Game.findById(req.body.gameId);
-
+    const id = parseInt(req.params.id, 10);
+    const { gameId } = req.body;
+    const user = await Users.findOne({ id });
+    const game = await Game.findById(gameId);
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
     if (!game) {
-      return res.status(404).json({ success: false, message: "Game not found" });
+      return res.status(404).json({ success: false, message: 'Game not found' });
     }
-
-    // Agregar el juego a la lista de juegos que le gustan
-    user[0].gamesLiked.push(game);
-    await user[0].save();
-
-    res.status(200).json({ success: true, message: "Game added to liked" });
+    if (!user.gamesLiked.includes(gameId)) {
+      user.gamesLiked.push(gameId);
+      await user.save();
+    }
+    res.status(200).json({ success: true, message: 'Game added to liked' });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error adding game to liked" });
+    console.error('Error en addGameToLiked:', error);
+    res.status(500).json({ success: false, message: 'Error adding game to liked' });
   }
 };
 
 // @desc    Eliminar un juego de la lista de juegos que le gustan a un usuario
-// @route   DELETE /api/v1/users/:id/remove-liked
+// @route   DELETE /api/v1/users/user/:id/remove-liked
 // @access  Public
 exports.removeGameFromLiked = async (req, res) => {
   try {
-    const user = await Users.find({"id": req.params.id});
-    const game = await Game.findById(req.body.gameId);
-
+    const id = parseInt(req.params.id, 10);
+    const { gameId } = req.body;
+    const user = await Users.findOne({ id });
+    const game = await Game.findById(gameId);
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
     if (!game) {
-      return res.status(404).json({ success: false, message: "Game not found" });
+      return res.status(404).json({ success: false, message: 'Game not found' });
     }
-
-    // Eliminar el juego de la lista de juegos que le gustan
-    user[0].gamesLiked.pull(game);
-    await user[0].save();
-
-    res.status(200).json({ success: true, message: "Game removed from liked" });
+    user.gamesLiked.pull(gameId);
+    await user.save();
+    const updatedUser = await Users.findOne({ id })
+      .populate({
+        path: 'gamesInProgress gamesCompleted gamesLiked gamesDisliked',
+        model: 'Game',
+        select: 'id title genre releaseDate',
+      })
+      .lean();
+    res.status(200).json({
+      success: true,
+      message: 'Game removed from liked',
+      data: updatedUser,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error removing game from liked" });
+    console.error('Error en removeGameFromLiked:', error);
+    res.status(500).json({ success: false, message: 'Error removing game from liked' });
   }
 };
 
 // @desc    Agregar un juego a la lista de juegos que no le gustan a un usuario
-// @route   POST /api/v1/users/:id/add-disliked
+// @route   POST /api/v1/users/user/:id/add-disliked
 // @access  Public
 exports.addGameToDisliked = async (req, res) => {
   try {
-    const user = await Users.find({"id": req.params.id});
-    const game = await Game.findById(req.body.gameId);
-
+    const id = parseInt(req.params.id, 10);
+    const { gameId } = req.body;
+    const user = await Users.findOne({ id });
+    const game = await Game.findById(gameId);
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
     if (!game) {
-      return res.status(404).json({ success: false, message: "Game not found" });
+      return res.status(404).json({ success: false, message: 'Game not found' });
     }
-
-    // Agregar el juego a la lista de juegos que no le gustan
-    user[0].gamesDisliked.push(game);
-    await user[0].save();
-
-    res.status(200).json({ success: true, message: "Game added to disliked" });
+    if (!user.gamesDisliked.includes(gameId)) {
+      user.gamesDisliked.push(gameId);
+      await user.save();
+    }
+    res.status(200).json({ success: true, message: 'Game added to disliked' });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error adding game to disliked" });
+    console.error('Error en addGameToDisliked:', error);
+    res.status(500).json({ success: false, message: 'Error adding game to disliked' });
   }
 };
 
 // @desc    Eliminar un juego de la lista de juegos que no le gustan a un usuario
-// @route   DELETE /api/v1/users/:id/remove-disliked
+// @route   DELETE /api/v1/users/user/:id/remove-disliked
 // @access  Public
 exports.removeGameFromDisliked = async (req, res) => {
   try {
-    const user = await Users.find({ "id": req.params.id });
-    const game = await Game.findById(req.body.gameId);
-
+    const id = parseInt(req.params.id, 10);
+    const { gameId } = req.body;
+    const user = await Users.findOne({ id });
+    const game = await Game.findById(gameId);
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
     if (!game) {
-      return res.status(404).json({ success: false, message: "Game not found" });
+      return res.status(404).json({ success: false, message: 'Game not found' });
     }
-
-    // Eliminar el juego de la lista de juegos que no le gustan
-    user[0].gamesDisliked.pull(game);
-    await user[0].save();
-
-    res.status(200).json({ success: true, message: "Game removed from disliked" });
+    user.gamesDisliked.pull(gameId);
+    await user.save();
+    const updatedUser = await Users.findOne({ id })
+      .populate({
+        path: 'gamesInProgress gamesCompleted gamesLiked gamesDisliked',
+        model: 'Game',
+        select: 'id title genre releaseDate',
+      })
+      .lean();
+    res.status(200).json({
+      success: true,
+      message: 'Game removed from disliked',
+      data: updatedUser,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error removing game from disliked" });
+    console.error('Error en removeGameFromDisliked:', error);
+    res.status(500).json({ success: false, message: 'Error removing game from disliked' });
   }
 };
 
 ////////////////////////////////////////////////
-
-// Registro
+// @desc    Register a new user
+// @route   POST /api/v1/users/register
+// @access  Public
 exports.registerUser = async (req, res) => {
   try {
     const { id, name, mail, password } = req.body;
@@ -288,23 +307,33 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ message: 'Todos los campos son obligatorios.' });
     }
 
-    // Verificación si el correo ya está registrado
+    // Verificar si el correo o ID ya están registrados
     const existingUser = await Users.findOne({ mail });
     if (existingUser) {
       return res.status(400).json({ message: 'El correo ya está registrado.' });
     }
+    const existingId = await Users.findOne({ id });
+    if (existingId) {
+      return res.status(400).json({ message: 'El ID ya está registrado.' });
+    }
 
-     await Users.create(req.body);
-     res.status(201).json({ success: true, user: { id, name, mail, password}, message: 'User created successfully' });
+    // Crear el usuario
+    const user = await Users.create({ id, name, mail, password });
 
+    res.status(201).json({
+      success: true,
+      user: { id: user.id, name: user.name, mail: user.mail },
+      message: 'Usuario registrado exitosamente',
+    });
   } catch (error) {
     console.error('Error en registerUser:', error);
     res.status(500).json({ message: 'Error en el servidor al registrar usuario.' });
   }
 };
 
-
-// Login
+// @desc    Login a user
+// @route   POST /api/v1/users/login
+// @access  Public
 exports.loginUser = async (req, res) => {
   try {
     const { mail, password } = req.body;
@@ -318,15 +347,19 @@ exports.loginUser = async (req, res) => {
       return res.status(401).json({ message: 'Correo no registrado.' });
     }
 
-    // Comparar contraseñas 
+    // Comparar contraseñas
     if (user.password !== password) {
       return res.status(401).json({ message: 'Contraseña incorrecta.' });
     }
 
-    res.status(200).json({ user: { id: user._id, name: user.name, mail: user.mail } });
+    res.status(200).json({
+      success: true,
+      user: { id: user.id, name: user.name, mail: user.mail },
+    });
   } catch (error) {
     console.error('Error en loginUser:', error);
     res.status(500).json({ message: 'Error en el servidor al iniciar sesión.' });
   }
 };
+
 
