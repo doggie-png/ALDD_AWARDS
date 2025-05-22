@@ -86,4 +86,48 @@ router.post("/vote", async (req, res) => {
   }
 });
 
+// GET top GOTY games (sum of votes and rating)
+router.get("/goty", async (req, res) => {
+  try {
+    const topGOTY = await MostVotedGame.aggregate([
+      {
+        $lookup: {
+          from: "games",
+          localField: "gameId",
+          foreignField: "_id",
+          as: "gameId"
+        }
+      },
+      { $unwind: "$gameId" },
+      {
+        $project: {
+          gameId: {
+            _id: "$gameId._id",
+            title: "$gameId.title",
+            image: "$gameId.image"
+          },
+          votes: { $ifNull: ["$votes", 0] },
+          rating: { $ifNull: ["$rating", 0] },
+          totalScore: { $add: [{ $ifNull: ["$votes", 0] }, { $ifNull: ["$rating", 0] }] }
+        }
+      },
+      { $sort: { totalScore: -1 } },
+      { $limit: 10 }
+    ]);
+    res.json(
+      topGOTY.map((game) => ({
+        id: game.gameId._id.toString(),
+        title: game.gameId.title,
+        img: game.gameId.image,
+        votes: game.votes,
+        rating: game.rating,
+        totalScore: game.totalScore
+      }))
+    );
+  } catch (error) {
+    console.error("Error fetching GOTY games:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 module.exports = router;
