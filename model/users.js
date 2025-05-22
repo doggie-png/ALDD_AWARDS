@@ -31,7 +31,8 @@ const usuariosSchema = new mongoose.Schema({
   gamesDisliked: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Game'
-  }]
+  }],
+  hasVoted: { type: Boolean, default: false } // Track if user has voted
 
 });
 

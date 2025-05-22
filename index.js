@@ -9,8 +9,9 @@ const uri = 'mongodb://localhost:27017/test';
 
 app.use(cors({
   origin: 'http://localhost:3000',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', "OPTIONS"],
+  credentials: true,
+  allowedHeaders: ["Content-Type"]
 }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -29,10 +30,12 @@ mongoose.connect(uri, {
   const users = require('./views/users');
   const games = require('./views/games');
   const topGames = require('./views/topGames');
+  const votaciones = require('./views/votaciones');
 
   app.use('/users', users);
   app.use('/games', games);
   app.use('/topGames', topGames);
+  app.use('/votaciones', votaciones);
 
   app.listen(port, () => {
     console.log(`Servidor backend escuchando en http://localhost:${port}`);

@@ -5,6 +5,7 @@ const GameSchema = new mongoose.Schema({
   title: { type: String, required: true, unique: true },
   genre: { type: String, required: true },
   releaseDate: { type: Date, required: true },
+  image: { type: String }, // URL de la imagen del juego
   
   // Contadores de métricas
   likesCount: { type: Number, default: 0 },          // Cantidad de "Me gusta"

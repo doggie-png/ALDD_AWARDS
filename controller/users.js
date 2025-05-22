@@ -85,16 +85,34 @@ exports.createUser = async (req, res) => {
 // @route   PATCH /api/v1/users/:id
 // @access  Public
 exports.updateUser = async (req, res) => {
-    const id = req.params.id;
-    const { name, mail, password} = req.body;
-    const user = await Users.findOneAndUpdate({ id }, { name, mail, password }, { new: true });
-    if (user != null) {
-     const userRes = user._doc;
-      res.json({ message: 'User updated successfully', userRes });
-    } else {
-      res.status(404).json({ message: `User with ID ${id} not found` });
+  try {
+    const id = parseInt(req.params.id, 10);
+    const { name, mail, password } = req.body;
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (mail) {
+      const existingUser = await Users.findOne({ mail, id: { $ne: id } });
+      if (existingUser) {
+        return res.status(400).json({ success: false, message: 'El correo ya está registrado' });
+      }
+      updateData.mail = mail;
     }
-  };
+    if (password) updateData.password = password;
+    const user = await Users.findOneAndUpdate({ id }, updateData, { new: true });
+    if (user) {
+      res.json({
+        success: true,
+        message: 'User updated successfully',
+        data: { id: user.id, name: user.name, mail: user.mail },
+      });
+    } else {
+      res.status(404).json({ success: false, message: `User with ID ${id} not found` });
+    }
+  } catch (error) {
+    console.error('Error en updateUser:', error);
+    res.status(500).json({ success: false, message: 'Error al actualizar usuario' });
+  }
+};
   // @desc    Delete a user
   // @route   DELETE /api/v1/users/:id
   // @access  Public
@@ -110,6 +128,91 @@ exports.updateUser = async (req, res) => {
 
 
   //--------------------------GAMES FROM USERS---------------------------------------//
+//
+
+// @desc    Add a game to the user's in-progress list
+// @route   POST /api/v1/users/:id/add-in-progress
+// @access  Public
+exports.addGameToInProgress = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const { gameId } = req.body;
+    console.log(`Adding game ${gameId} to user ${id} inProgress`);
+    const user = await Users.findOne({ id });
+    const game = await Game.findById(gameId);
+    if (!user) {
+      console.log(`User with id ${id} not found`);
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    if (!game) {
+      console.log(`Game with id ${gameId} not found`);
+      return res.status(404).json({ success: false, message: 'Game not found' });
+    }
+    if (!user.gamesInProgress.includes(gameId)) {
+      user.gamesInProgress.push(gameId);
+      await user.save();
+    } else {
+      console.log(`Game ${gameId} already in user's inProgress list`);
+    }
+    const updatedUser = await Users.findOne({ id })
+      .populate({
+        path: 'gamesInProgress gamesCompleted gamesLiked gamesDisliked',
+        model: 'Game',
+        select: 'id title genre releaseDate',
+      })
+      .lean();
+    res.status(200).json({
+      success: true,
+      message: 'Game added to in progress',
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.error('Error en addGameToInProgress:', error);
+    res.status(500).json({ success: false, message: 'Error adding game to in progress' });
+  }
+};
+
+// @desc    Remove a game from the user's in-progress list
+// @route   DELETE /api/v1/users/:id/remove-in-progress
+// @access  Public
+exports.removeGameFromInProgress = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const { gameId } = req.body;
+    console.log(`Removing game ${gameId} from user ${id} inProgress`);
+    const user = await Users.findOne({ id });
+    const game = await Game.findById(gameId);
+    if (!user) {
+      console.log(`User with id ${id} not found`);
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    if (!game) {
+      console.log(`Game with id ${gameId} not found`);
+      return res.status(404).json({ success: false, message: 'Game not found' });
+    }
+    if (!user.gamesInProgress.includes(gameId)) {
+      console.log(`Game ${gameId} not in user's inProgress list`);
+      return res.status(400).json({ success: false, message: 'Game not in inProgress list' });
+    }
+    user.gamesInProgress.pull(gameId);
+    await user.save();
+    const updatedUser = await Users.findOne({ id })
+      .populate({
+        path: 'gamesInProgress gamesCompleted gamesLiked gamesDisliked',
+        model: 'Game',
+        select: 'id title genre releaseDate',
+      })
+      .lean();
+    res.status(200).json({
+      success: true,
+      message: 'Game removed from in progress',
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.error('Error en removeGameFromInProgress:', error);
+    res.status(500).json({ success: false, message: 'Error removing game from in progress' });
+  }
+};
 
 // @desc    Agregar un juego a la lista de juegos en progreso de un usuario
 // @route   POST /api/v1/users/:id/add-in-progress
