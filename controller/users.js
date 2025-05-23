@@ -89,6 +89,7 @@ exports.updateUser = async (req, res) => {
     const id = parseInt(req.params.id, 10);
     const { name, mail, password } = req.body;
     const updateData = {};
+
     if (name) updateData.name = name;
     if (mail) {
       const existingUser = await Users.findOne({ mail, id: { $ne: id } });
@@ -97,7 +98,13 @@ exports.updateUser = async (req, res) => {
       }
       updateData.mail = mail;
     }
-    if (password) updateData.password = password;
+    if (password) {
+      if (password.length < 6) {
+        return res.status(400).json({ success: false, message: 'La contraseña debe tener al menos 6 caracteres.' });
+      }
+      updateData.password = password;
+    }
+
     const user = await Users.findOneAndUpdate({ id }, updateData, { new: true });
     if (user) {
       res.json({
@@ -408,6 +415,11 @@ exports.registerUser = async (req, res) => {
     // Validación de campos obligatorios
     if (!id || !name || !mail || !password) {
       return res.status(400).json({ message: 'Todos los campos son obligatorios.' });
+    }
+
+    // Validación de la contraseña
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'La contraseña debe tener al menos 6 caracteres.' });
     }
 
     // Verificar si el correo o ID ya están registrados

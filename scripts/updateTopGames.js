@@ -7,12 +7,12 @@ const MostVotedGame = require("../model/mostVotedGames");
 const CompletionRateGame = require("../model/highestCompletionRateGames");
 
 async function actualizarMétricas() {
-  let client;
-
   try {
-    // Conectar a MongoDB
-    client = await mongoose.connect("mongodb://localhost:27017/test");
-    console.log("Conexión a MongoDB exitosa");
+    // Verify connection
+    if (mongoose.connection.readyState !== 1) {
+      throw new Error("MongoDB connection is not open");
+    }
+    console.log("Running actualizarMétricas at", new Date().toISOString());
 
     // Resetear métricas en Game
     await Game.updateMany({}, {
@@ -39,7 +39,6 @@ async function actualizarMétricas() {
 
     // Agregación para calcular métricas
     const metrics = await Usuarios.aggregate([
-      // Descomponer arrays
       {
         $facet: {
           liked: [
@@ -68,7 +67,6 @@ async function actualizarMétricas() {
           ]
         }
       },
-      // Combinar resultados
       {
         $project: {
           games: {
@@ -86,7 +84,6 @@ async function actualizarMétricas() {
           completedCount: { $sum: "$games.completedCount" }
         }
       },
-      // Calcular votes y completionRate
       {
         $project: {
           _id: 1,
@@ -109,7 +106,6 @@ async function actualizarMétricas() {
           }
         }
       },
-      // Redondear completionRate y establecer rating
       {
         $project: {
           _id: 1,
@@ -119,7 +115,7 @@ async function actualizarMétricas() {
           completedCount: 1,
           votes: 1,
           completionRate: { $round: ["$completionRate", 2] },
-          rating: { $literal: 0 } // Corregido para establecer rating como valor 0
+          rating: { $literal: 0 }
         }
       }
     ]);
@@ -179,7 +175,7 @@ async function actualizarMétricas() {
     let dislikedWriteResult = { upsertedCount: 0, modifiedCount: 0 };
     if (dislikedOps.length > 0) {
       dislikedWriteResult = await MostDislikedGame.bulkWrite(dislikedOps);
-      console.log(`MostDislikedGame actualizada: ${dislikedWriteResult.upsertedCount} insertados, ${dislikedWriteResult.modifiedCount} modificados`);
+      console.log(`MostDislikedGame actualizada: ${likedWriteResult.upsertedCount} insertados, ${likedWriteResult.modifiedCount} modificados`);
     }
 
     // MostVotedGame
@@ -218,15 +214,9 @@ async function actualizarMétricas() {
 
     console.log("Actualización de métricas completada.");
   } catch (error) {
-    console.error("Error actualizando métricas:", error);
+    console.error("Error actualizando métricas:", error.message);
     throw error;
-  } finally {
-    if (client) {
-      await client.connection.close();
-      console.log("Conexión a MongoDB cerrada");
-    }
   }
 }
 
-actualizarMétricas();
 module.exports = actualizarMétricas;
